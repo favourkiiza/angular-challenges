@@ -1,6 +1,7 @@
 import { AsyncPipe, NgFor, NgIf } from '@angular/common';
 import { Component, Input, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
+import { map } from 'rxjs';
 import { FakeServiceService } from './fake.service';
 
 interface MenuItem {
@@ -39,15 +40,9 @@ export class NavigationComponent {
 @Component({
   imports: [NavigationComponent, NgIf, AsyncPipe],
   template: `
-    <ng-container *ngIf="info$ | async as info">
-      <ng-container *ngIf="info !== null; else noInfo">
-        <app-nav [menus]="getMenu(info)" />
-      </ng-container>
+    <ng-container *ngIf="menus$ | async as menus">
+      <app-nav [menus]="menus" />
     </ng-container>
-
-    <ng-template #noInfo>
-      <app-nav [menus]="getMenu('')" />
-    </ng-template>
   `,
   host: {},
 })
@@ -56,10 +51,10 @@ export class MainNavigationComponent {
 
   readonly info$ = this.fakeBackend.getInfoFromBackend();
 
-  getMenu(prop: string) {
-    return [
-      { path: '/foo', name: `Foo ${prop}` },
-      { path: '/bar', name: `Bar ${prop}` },
-    ];
-  }
+  readonly menus$ = this.info$.pipe(
+    map((info) => [
+      { path: '/foo', name: `Foo ${info}` },
+      { path: '/bar', name: `Bar ${info}` },
+    ]),
+  );
 }

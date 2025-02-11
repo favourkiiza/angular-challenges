@@ -4,27 +4,22 @@ import { Injectable, computed, signal } from '@angular/core';
 export class HeavyCalculationService {
   private finalLength = 664579;
   private loadingLength = signal(0);
+  private worker: Worker;
 
   loadingPercentage = computed(
     () => (this.loadingLength() * 100) / this.finalLength,
   );
+  constructor() {
+    // Create a new web worker
+    this.worker = new Worker(new URL('./app.worker', import.meta.url));
 
-  startLoading() {
-    this.randomHeavyCalculationFunction();
+    // Listen for messages from the worker
+    this.worker.onmessage = ({ data }) => {
+      this.loadingLength.set(data.loadingLength); // Update the progress
+    };
   }
 
-  private randomHeavyCalculationFunction() {
-    for (let num = 2; num <= 10000000; num++) {
-      let randomFlag = true;
-      for (let i = 2; i <= Math.sqrt(num); i++) {
-        if (num % i === 0) {
-          randomFlag = false;
-          break;
-        }
-      }
-      if (randomFlag) {
-        this.loadingLength.update((l) => l + 1);
-      }
-    }
+  startLoading() {
+    this.worker.postMessage({ finalLength: this.finalLength }); // Start the computation
   }
 }

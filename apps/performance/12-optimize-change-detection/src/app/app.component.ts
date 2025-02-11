@@ -1,5 +1,5 @@
 import { AsyncPipe, NgIf } from '@angular/common';
-import { Component, HostListener } from '@angular/core';
+import { ChangeDetectionStrategy, Component, NgZone } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 
 @Component({
@@ -29,6 +29,7 @@ import { BehaviorSubject } from 'rxjs';
       }
     `,
   ],
+  changeDetection: ChangeDetectionStrategy.OnPush, // Use OnPush to minimize change detection
 })
 export class AppComponent {
   title = 'scroll-cd';
@@ -36,10 +37,23 @@ export class AppComponent {
   private displayButtonSubject = new BehaviorSubject<boolean>(false);
   displayButton$ = this.displayButtonSubject.asObservable();
 
-  @HostListener('window:scroll', ['$event'])
+  /*@HostListener('window:scroll', ['$event'])
   onScroll() {
     const pos = window.pageYOffset;
     this.displayButtonSubject.next(pos > 50);
+  }*/
+
+  constructor(private ngZone: NgZone) {
+    this.setupScrollListener();
+  }
+
+  private setupScrollListener() {
+    this.ngZone.runOutsideAngular(() => {
+      window.addEventListener('scroll', () => {
+        const pos = window.pageYOffset;
+        this.displayButtonSubject.next(pos > 50);
+      });
+    });
   }
 
   goToTop() {

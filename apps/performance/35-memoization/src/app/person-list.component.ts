@@ -8,13 +8,32 @@ import { MatInputModule } from '@angular/material/input';
 import { MatListModule } from '@angular/material/list';
 import { Person } from './person.model';
 
-const fibonacci = (num: number): number => {
+/*const fibonacci = (num: number): number => {
   if (num === 1 || num === 2) {
     return 1;
   }
   return fibonacci(num - 1) + fibonacci(num - 2);
-};
+};*/
 
+// Memoized Fibonacci function
+const fibonacci = (() => {
+  const cache = new Map<number, number>();
+
+  return (num: number): number => {
+    if (cache.has(num)) {
+      return cache.get(num)!;
+    }
+
+    if (num === 1 || num === 2) {
+      cache.set(num, 1);
+      return 1;
+    }
+
+    const result = fibonacci(num - 1) + fibonacci(num - 2);
+    cache.set(num, result);
+    return result;
+  };
+})();
 @Component({
   selector: 'app-person-list',
   imports: [

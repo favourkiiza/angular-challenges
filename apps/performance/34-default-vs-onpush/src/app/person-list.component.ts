@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 
 import { CDFlashingDirective } from '@angular-challenges/shared/directives';
 import { CommonModule } from '@angular/common';
@@ -51,6 +51,7 @@ import { MatListModule } from '@angular/material/list';
   host: {
     class: 'w-full flex flex-col items-center',
   },
+  changeDetection: ChangeDetectionStrategy.OnPush, // Use OnPush change detection
 })
 export class PersonListComponent {
   @Input() names: string[] = [];
@@ -60,7 +61,8 @@ export class PersonListComponent {
 
   handleKey(event: KeyboardEvent) {
     if (event.key === 'Enter') {
-      this.names?.unshift(this.label);
+      // Create a new array to ensure the reference changes
+      this.names = [this.label, ...this.names];
       this.label = '';
     }
   }
